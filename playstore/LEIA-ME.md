@@ -6,7 +6,7 @@ Versão 0.1.0 (versionCode 1) · pacote `com.murilo.bloqueadorreels` · minSdk 2
 
 | Arquivo | Para quê |
 |---|---|
-| `bloqueador-reels-v0.1.0.aab` | O que a Play recebe (App Bundle de release, assinado com a chave de upload). SHA-256: `c8705bb5…35df8c1` |
+| `bloqueador-reels-v0.1.0.aab` | O que a Play recebe (App Bundle de release, assinado com a chave de upload). SHA-256: `a64770ee…c08626e` |
 | `ficha-da-loja.md` | Nome, descrição curta e completa, notas da versão, categoria |
 | `graficos/icone-512.png`, `graficos/imagem-de-destaque-1024x500.png` | Gráficos da ficha |
 | `screenshots/01, 01b, 02 a 06` | 7 screenshots (1080×2160, dentro do limite de 2:1): aviso (com e sem os botões), serviço desativado, bloqueio ativado, modo escuro, política e termos |

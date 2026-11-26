@@ -9,7 +9,8 @@ O Bloqueador de Reels é uma ferramenta independente que, por escolha sua, escon
 ## 3. Sem afiliação
 O app não tem afiliação, aprovação ou patrocínio do Instagram ou da Meta. Instagram e Reels são marcas de seus respectivos titulares. O uso do Instagram continua sujeito aos termos e às políticas dele.
 ## 4. Licença de uso
-O app é gratuito. Você recebe uma licença pessoal, não exclusiva e revogável para usá-lo no seu aparelho, para fins não comerciais. Não é permitido vender, redistribuir como se fosse seu ou remover avisos e créditos do app.
+O app é gratuito. Você recebe uma licença pessoal e não exclusiva para usá-lo no seu aparelho.
+O código-fonte é aberto e está disponível sob a Licença MIT em https://github.com/MurilSanches/bloqueador-reels, que permite usar, copiar e modificar o código conforme os termos dela. A licença do código não inclui o nome, o ícone e a identidade visual "Bloqueador de Reels" e "Murilo Studios": versões modificadas não podem se apresentar como o app original.
 ## 5. Seu controle e consentimento
 O serviço só funciona depois que você aceita o aviso exibido no app. Você pode pausar o bloqueio no interruptor do app, desativar o serviço em **Configurações › Acessibilidade** ou desinstalar o app a qualquer momento.
 ## 6. Uso adequado

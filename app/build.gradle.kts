@@ -13,8 +13,10 @@ android {
         applicationId = "com.murilo.bloqueadorreels"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        // O CI passa -PversionCode=<n> -PversionName=<x.y.z> (a Play exige versionCode crescente).
+        // Local, sem parâmetros: 1 / 0.1.0.
+        versionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1
+        versionName = (project.findProperty("versionName") as String?) ?: "0.1.0"
     }
 
     // Chave de assinatura local (arquivos fora do git). Sem ela, o release sai sem assinatura.
