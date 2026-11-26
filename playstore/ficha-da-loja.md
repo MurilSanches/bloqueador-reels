@@ -14,7 +14,8 @@ Idioma padrão: **Português (Brasil)**.
 | Preço | Gratuito, sem anúncios, sem compras no app | |
 | Contém anúncios | Não | |
 | E-mail de contato | murilosanchesp@gmail.com (aparece na loja) | |
-| Site / política de privacidade | **[URL pública da política — obrigatório]** (ver `politica-de-privacidade.html`) | |
+| Site | https://murilsanches.github.io/bloqueador-reels/ | |
+| Política de privacidade (URL) | https://murilsanches.github.io/bloqueador-reels/politica-de-privacidade.html | |
 
 ## Descrição completa (cole inteira; usa ~2.100 de 4.000 caracteres)
 

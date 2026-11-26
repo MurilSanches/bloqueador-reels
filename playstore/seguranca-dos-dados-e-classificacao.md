@@ -7,7 +7,7 @@
 | O app coleta ou compartilha dados do usuário? | **Não** | O app não tem a permissão de internet; o que lê da tela é processado só no aparelho e descartado. A definição da Play de "coletar" é enviar dados para fora do aparelho. |
 | Dados criptografados em trânsito | Não se aplica | Nada é transmitido |
 | Posso pedir exclusão dos dados? | Não se aplica | Nada é coletado. Preferências locais somem ao desinstalar |
-| Política de privacidade | **[URL pública]** (`politica-de-privacidade.html`) | Obrigatória por usar Acessibilidade. Também está dentro do app (rodapé), como a Play exige |
+| Política de privacidade | **https://murilsanches.github.io/bloqueador-reels/politica-de-privacidade.html** | Obrigatória por usar Acessibilidade. Também está dentro do app (rodapé), como a Play exige |
 
 Conferência técnica (v0.1.0, `aapt2 dump permissions` no APK de release): nenhuma permissão de uso do Android (sem internet, localização, contatos, armazenamento etc.). Aparece só `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, permissão interna no namespace do próprio app que a biblioteca AndroidX adiciona, e o vínculo do serviço (`BIND_ACCESSIBILITY_SERVICE`) no `<service>`. Sem SDK de terceiros de análise, anúncios ou rede. `allowBackup=false`.
 

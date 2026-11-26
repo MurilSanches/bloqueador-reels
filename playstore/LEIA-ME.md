@@ -10,7 +10,7 @@ Versão 0.1.0 (versionCode 1) · pacote `com.murilo.bloqueadorreels` · minSdk 2
 | `ficha-da-loja.md` | Nome, descrição curta e completa, notas da versão, categoria |
 | `graficos/icone-512.png`, `graficos/imagem-de-destaque-1024x500.png` | Gráficos da ficha |
 | `screenshots/01, 01b, 02 a 06` | 7 screenshots (1080×2160, dentro do limite de 2:1): aviso (com e sem os botões), serviço desativado, bloqueio ativado, modo escuro, política e termos |
-| `politica-de-privacidade.html`, `termos-de-uso.html` | Versões para hospedar, geradas por `gerar-html.ps1` dos mesmos textos que o app mostra (falta só seu nome e e-mail e hospedar) |
+| `docs/` (raiz do repo): `index.html`, `politica-de-privacidade.html`, `termos-de-uso.html` | Site publicado pelo GitHub Pages, gerado por `playstore/gerar-html.ps1` dos mesmos textos que o app mostra |
 | `declaracao-acessibilidade.md` | Respostas do formulário de Acessibilidade + roteiro de vídeo |
 | `seguranca-dos-dados-e-classificacao.md` | Segurança dos dados, classificação, público-alvo, anúncios |
 | `video-consentimento.mp4` | Vídeo do aviso, política, recusa, aceite e ativação (56 s) |
@@ -21,7 +21,7 @@ Mudanças no app para a Play: botão **"Não aceito"** no aviso, serviço inerte
 ## O que só você pode fazer
 
 1. **Conta de desenvolvedor** em play.google.com/console: US$ 25, verificação de identidade (documento, telefone, endereço).
-2. **Hospedar a política e os termos.** Nome ("Murilo Studios") e e-mail já estão preenchidos no app (`strings.xml`) e nos `.html` gerados. Falta hospedar os dois `.html` (GitHub Pages, Google Sites ou Notion público) e usar a URL da política na ficha e na Segurança dos dados. Se mudar nome/e-mail: edite `strings.xml`, rode `powershell -File playstoregerar-html.ps1 -Responsavel "Nome" -Contato "email"` e recompile o `.aab`.
+2. **Política e termos já estão hospedados** no GitHub Pages: https://murilsanches.github.io/bloqueador-reels/politica-de-privacidade.html (use esta URL na ficha da loja e na Segurança dos dados). Se mudar nome/e-mail ou os textos: edite `strings.xml`/os `.md` de `app/src/main/assets`, rode `powershell -File playstoregerar-html.ps1 -Responsavel "Nome" -Contato "email"`, faça `git push` e recompile o `.aab`.
 3. **Teste fechado: 12 testadores por 14 dias seguidos** (conta pessoal criada depois de 13/11/2023). Convide pessoas com conta Google pelo e-mail; elas aceitam o link e instalam. Só depois o botão de produção libera. Conta de organização (com D-U-N-S) é isenta, segundo fontes secundárias.
 4. **Vídeo da declaração**: suba `video-consentimento.mp4` no YouTube como *Não listado*. Se quiser mostrar o app em uso, regrave a parte do Instagram com uma conta de teste (roteiro em `declaracao-acessibilidade.md`).
 5. **Colar os textos e responder os formulários** da Play Console com os arquivos desta pasta.
