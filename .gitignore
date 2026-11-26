@@ -1,0 +1,20 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+captures/
+.cxx/
+
+release.keystore
+keystore.properties
+*.jks
+
+# Artefatos de build/release (vão em Releases, não no repositório)
+*.apk
+*.aab
+.kotlin/
+*.log
+
+# Contém feed real e conta de teste: nunca versionar
+playstore/video-funcionamento-LOCAL*

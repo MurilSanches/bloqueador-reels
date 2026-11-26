@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bloqueador de Reels</string>
+    <string name="accessibility_description">Lê a tela do Instagram, no próprio aparelho, para esconder a aba Reels e voltar quando a tela de Reels abrir. Nada é enviado para fora do celular.</string>
+    <string name="desc_home">Início</string>
+    <string name="desc_search">Pesquisar</string>
+    <string name="desc_create">Criar</string>
+    <string name="desc_profile">Perfil</string>
+    <string name="desc_shop">Loja</string>
+    <string name="desc_messages">Mensagens</string>
+    <string name="reels_bloqueado">Reels bloqueado</string>
+    <!-- Preencha antes de publicar: aparecem na Política de Privacidade e nos Termos dentro do app.
+         Vazio = o app mostra "pela página do app na Google Play". -->
+    <string name="responsavel_nome" translatable="false">Murilo Studios</string>
+    <string name="contato_email" translatable="false">murilosanchesp@gmail.com</string>
+</resources>

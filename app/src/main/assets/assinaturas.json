@@ -1,0 +1,49 @@
+{
+  "versao": 1,
+  "containerBarraIds": [
+    "com.instagram.android:id/tab_bar"
+  ],
+  "reelsViewerIds": [
+    "com.instagram.android:id/clips_viewer_view_pager"
+  ],
+  "badgeIds": [
+    "com.instagram.android:id/notification"
+  ],
+  "botoes": [
+    {
+      "chave": "home",
+      "ids": ["com.instagram.android:id/feed_tab"],
+      "descricoes": ["Início", "Página inicial", "Home"]
+    },
+    {
+      "chave": "search",
+      "ids": ["com.instagram.android:id/search_tab"],
+      "descricoes": ["Pesquisar e explorar", "Pesquisar", "Search and explore", "Search"]
+    },
+    {
+      "chave": "create",
+      "ids": ["com.instagram.android:id/creation_tab"],
+      "descricoes": ["Criar", "Nova publicação", "Create", "New post"]
+    },
+    {
+      "chave": "reels",
+      "ids": ["com.instagram.android:id/clips_tab"],
+      "descricoes": ["Reels"]
+    },
+    {
+      "chave": "shop",
+      "ids": ["com.instagram.android:id/shopping_tab"],
+      "descricoes": ["Loja", "Shop"]
+    },
+    {
+      "chave": "messages",
+      "ids": ["com.instagram.android:id/direct_tab"],
+      "descricoes": ["Mensagens", "Mensagem", "Messages", "Message"]
+    },
+    {
+      "chave": "profile",
+      "ids": ["com.instagram.android:id/profile_tab"],
+      "descricoes": ["Perfil", "Profile"]
+    }
+  ]
+}
