@@ -83,6 +83,7 @@ class ReelsBlockerService : AccessibilityService() {
 
     override fun onServiceConnected() {
         alvo = InstagramAlvo(Assinaturas.carregar(this), this)
+        barra?.remover() // religação do serviço: não deixa janela antiga órfã
         barra = BarraOverlay(this, alvo.estilo) { chave, longo ->
             acionarBotaoReal(
                 chave,
@@ -304,7 +305,10 @@ class ReelsBlockerService : AccessibilityService() {
 
     private fun mostrarBarra(estado: EstadoBarra) {
         // Só uma janela nova precisa (re)armar a vigia; atualização no lugar não.
-        if (barra?.mostrar(estado) != BarraOverlay.Resultado.CRIADO) return
+        val resultado = barra?.mostrar(estado)
+        // addView falhou: esquece o estado para a próxima leitura tentar desenhar de novo.
+        if (resultado == BarraOverlay.Resultado.FALHOU) ultimoEstado = null
+        if (resultado != BarraOverlay.Resultado.CRIADO) return
         ultimaConfirmacaoPacote = SystemClock.uptimeMillis()
         ultimaJanelaAtivaId = janelaAtivaId()
         garantirVigia()
