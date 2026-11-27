@@ -65,6 +65,16 @@ class ReelsBlockerService : AccessibilityService() {
     private var ultimaVerificacao = 0L
     private var abaLocal = "home"
 
+    // Reels permitido (opções "link" e "chat"). Só vale com as opções ligadas no app.
+    private var permitirLink = false
+    private var permitirChat = false
+    private var foraDoInstagram = true   // o Instagram não estava na tela; a próxima aparição é uma "entrada"
+    private var entradaExterna = false   // a entrada atual pode ter vindo de um link de outro app
+    private var entradaDesde = 0L
+    private var liberadoPorLink = false  // Reels liberado pela entrada; segue liberado até sair dele
+    private var vigiaAgendada = false
+    private var ultimoReelsPermitido = false
+
 
     // Saúde: avisa o usuário se o Instagram é usado por muito tempo sem reconhecer nada.
     private var semReconhecerDesde = 0L
@@ -72,7 +82,10 @@ class ReelsBlockerService : AccessibilityService() {
     private var ultimaGravacaoSaude = 0L
 
     private val ouvinte = SharedPreferences.OnSharedPreferenceChangeListener { _, chave ->
-        if (chave == Prefs.IG_OCULTAR_REELS || chave == Prefs.CONSENTIMENTO) {
+        if (chave == Prefs.PERMITIR_REELS_LINK || chave == Prefs.PERMITIR_REELS_CHAT) carregarOpcoes()
+        if (chave == Prefs.IG_OCULTAR_REELS || chave == Prefs.CONSENTIMENTO ||
+            chave == Prefs.PERMITIR_REELS_LINK || chave == Prefs.PERMITIR_REELS_CHAT
+        ) {
             ultimoEstado = null // força reavaliar
             if (!ativoParaInstagram()) esconderOverlay() else verificarBarra()
         }
@@ -81,8 +94,16 @@ class ReelsBlockerService : AccessibilityService() {
     /** O serviço só age com o aviso aceito no app e o interruptor ligado. */
     private fun ativoParaInstagram() = Prefs.consentimento(this) && Prefs.ocultarReels(this)
 
+    private fun carregarOpcoes() {
+        permitirLink = Prefs.permitirReelsLink(this)
+        permitirChat = Prefs.permitirReelsChat(this)
+        if (!permitirLink) { entradaExterna = false; liberadoPorLink = false }
+    }
+
     override fun onServiceConnected() {
         assinaturas = Assinaturas.carregar(this)
+        carregarOpcoes()
+        foraDoInstagram = true
         Prefs.prefs(this).registerOnSharedPreferenceChangeListener(ouvinte)
         semReconhecerDesde = Prefs.semReconhecerDesde(this)
         ultimoUsoInstagram = Prefs.ultimoUsoInstagram(this)
@@ -100,6 +121,7 @@ class ReelsBlockerService : AccessibilityService() {
     private fun desligar() {
         Prefs.prefs(this).unregisterOnSharedPreferenceChangeListener(ouvinte)
         handler.removeCallbacksAndMessages(null)
+        vigiaAgendada = false
         esconderOverlay()
     }
 
@@ -129,6 +151,14 @@ class ReelsBlockerService : AccessibilityService() {
             esconderOverlay()
             return
         }
+        // Instagram voltou à tela depois de ter saído (link do WhatsApp, launcher, recentes...): é uma
+        // "entrada". Só conta como possível link se a opção estiver ligada.
+        if (foraDoInstagram) {
+            foraDoInstagram = false
+            entradaExterna = permitirLink
+            entradaDesde = SystemClock.uptimeMillis()
+        }
+        if (permitirLink) garantirVigia() // percebe quando o usuário sai do Instagram, mesmo sem overlay
         // Troca de tela dentro do Instagram: NÃO esconde o overlay (a barra real, com o Reels,
         // apareceria por um instante). Relê logo; se a barra sumiu, a leitura esconde.
         // Debounce + intervalo mínimo nos demais eventos: no Reels eles não param e cada leitura
@@ -151,15 +181,22 @@ class ReelsBlockerService : AccessibilityService() {
 
         if (Prefs.ehDebug(this) && Prefs.mapeamento(this)) despejarMapa(root)
 
-        // Fase 4: tela de Reels aberta por qualquer caminho -> volta.
-        if (bloquearSeForReels(root)) {
+        // Fase 4: tela de Reels aberta -> volta, salvo se veio de link/chat e a opção está ligada.
+        val idReels = reelsAbertoId(root)
+        if (idReels != null && !reelsPermitido(root, idReels)) {
+            bloquearReels(idReels)
             registrarSaude(reconheceu = true)
             return esconderOverlay()
         }
 
         // Fase 2: lê a barra. Sem certeza -> não desenha nada.
         val leitura = BarraReader.ler(root, assinaturas, modoEscuro())
-        registrarSaude(reconheceu = leitura != null)
+        registrarSaude(reconheceu = leitura != null || idReels != null)
+        if (idReels == null) {
+            ultimoReelsPermitido = false
+            // Tela normal do Instagram (com a barra): a entrada de fora já foi consumida.
+            if (leitura != null) { entradaExterna = false; liberadoPorLink = false }
+        }
         if (leitura == null) return esconderOverlay()
 
         botoesReais.clear()
@@ -196,14 +233,45 @@ class ReelsBlockerService : AccessibilityService() {
 
     // ---------- Fase 4 ----------
 
-    private fun bloquearSeForReels(root: AccessibilityNodeInfo): Boolean {
-        val idReels = assinaturas.reelsViewerIds.firstOrNull { id ->
-            root.findAccessibilityNodeInfosByViewId(id).any { it.isVisibleToUser }
-        } ?: return false
+    private fun reelsAbertoId(root: AccessibilityNodeInfo): String? =
+        assinaturas.reelsViewerIds.firstOrNull { id -> algumVisivel(root, id) }
 
+    private fun algumVisivel(root: AccessibilityNodeInfo, id: String) =
+        root.findAccessibilityNodeInfosByViewId(id).any { it.isVisibleToUser }
+
+    /**
+     * Reels aberto: vale ver? Link = o Instagram acabou de entrar vindo de fora, e só vale para o
+     * PRIMEIRO Reels do viewer (ao deslizar para o próximo a liberação do link se encerra). Chat = o
+     * Reels traz o "enviado por" de uma conversa (só confere se a view existe, nunca lê nome ou texto).
+     */
+    private fun reelsPermitido(root: AccessibilityNodeInfo, idReels: String): Boolean {
+        if (!permitirLink && !permitirChat) return false
+        val primeiro = noPrimeiroReels(root, idReels)
+        if (!primeiro) { entradaExterna = false; liberadoPorLink = false } // deslizou: liberação do link acabou
+        val entrada = Decisoes.entradaExternaValida(entradaExterna, SystemClock.uptimeMillis() - entradaDesde)
+        val viaChat = permitirChat && assinaturas.reelsChatIds.any { algumVisivel(root, it) }
+        val ok = Decisoes.reelsPermitido(permitirLink, entrada, liberadoPorLink, permitirChat, viaChat, primeiro)
+        if (permitirLink && primeiro && (entrada || liberadoPorLink)) liberadoPorLink = true
+        if (ok != ultimoReelsPermitido) {
+            ultimoReelsPermitido = ok
+            Log.i(TAG, "Reels permitido=$ok (entradaDeFora=$entrada, liberadoPorLink=$liberadoPorLink, chat=$viaChat, primeiro=$primeiro)")
+        }
+        return ok
+    }
+
+    /**
+     * O viewer está no primeiro Reels? Medido no emulador: no primeiro o pager só oferece "rolar para
+     * frente"; depois de deslizar passa a oferecer também "rolar para trás". Não lê conteúdo.
+     */
+    private fun noPrimeiroReels(root: AccessibilityNodeInfo, idReels: String): Boolean {
+        val pager = root.findAccessibilityNodeInfosByViewId(idReels).firstOrNull { it.isVisibleToUser } ?: return false
+        return Decisoes.noPrimeiroDoViewer(pager.actionList.any { it.id == AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD })
+    }
+
+    private fun bloquearReels(idReels: String) {
         val agora = SystemClock.uptimeMillis()
         val acao = Decisoes.acaoReels(agora - ultimoBloqueio)
-        if (acao == AcaoReels.IGNORAR) return true // "voltar" ainda em andamento
+        if (acao == AcaoReels.IGNORAR) return // "voltar" ainda em andamento
         ultimoBloqueio = agora
         Log.i(TAG, "tela de Reels ($idReels): $acao")
         performGlobalAction(if (acao == AcaoReels.HOME) GLOBAL_ACTION_HOME else GLOBAL_ACTION_BACK)
@@ -212,7 +280,6 @@ class ReelsBlockerService : AccessibilityService() {
             ultimoAviso = agora
             Toast.makeText(this, R.string.reels_bloqueado, Toast.LENGTH_SHORT).show()
         }
-        return true
     }
 
     // ---------- Fase 3 ----------
@@ -427,7 +494,7 @@ class ReelsBlockerService : AccessibilityService() {
         if (overlay != null) {
             ultimaConfirmacaoPacote = SystemClock.uptimeMillis()
             ultimaJanelaAtivaId = janelaAtivaId()
-            handler.postDelayed(vigia, VIGIA_MS)
+            garantirVigia()
         }
     }
 
@@ -439,7 +506,9 @@ class ReelsBlockerService : AccessibilityService() {
      */
     private val vigia = object : Runnable {
         override fun run() {
-            if (overlay == null) return
+            vigiaAgendada = false
+            // Sem overlay só continua se a opção "link" precisa saber quando o Instagram sai de cena.
+            if (overlay == null && (foraDoInstagram || !permitirLink)) return
             // A cada 80 ms: só metadados das janelas (id da ativa), sem tocar no processo do Instagram.
             // Lê o pacote da janela ativa quando ela MUDOU (um por mudança: diálogo do próprio
             // Instagram não repete a leitura) e, como rede de segurança, a cada VIGIA_PACOTE_MS.
@@ -451,10 +520,32 @@ class ReelsBlockerService : AccessibilityService() {
                 ultimaJanelaAtivaId = ativaId
                 ultimaConfirmacaoPacote = agora
                 val ativo = rootInActiveWindow?.packageName?.toString()
-                if (ativo != PKG_INSTAGRAM) return esconderOverlay()
+                if (ativo == null) {
+                    // Transição de tela (ex.: abrir conversa): a raiz some por instantes. Não é sair do
+                    // Instagram; só tira a barra e relê logo (senão virava "entrada de fora" e liberava Reels).
+                    esconderOverlay()
+                    agendar(DEBOUNCE_MS)
+                } else if (Decisoes.saiuDoInstagram(ativo, PKG_INSTAGRAM)) return sairDoInstagram()
             }
+            vigiaAgendada = true
             handler.postDelayed(this, VIGIA_MS)
         }
+    }
+
+    /** Um único agendamento da vigia por vez (eventos do Instagram chegam o tempo todo). */
+    private fun garantirVigia() {
+        if (vigiaAgendada) return
+        vigiaAgendada = true
+        handler.postDelayed(vigia, VIGIA_MS)
+    }
+
+    /** Outro app/sistema assumiu a tela: some o overlay e a próxima volta ao Instagram é uma nova entrada. */
+    private fun sairDoInstagram() {
+        foraDoInstagram = true
+        entradaExterna = false
+        liberadoPorLink = false
+        ultimoReelsPermitido = false
+        esconderOverlay()
     }
 
     /** Id da janela ativa (-1 se não houver ou a lista vier vazia). Só metadados, sem IPC ao app. */
@@ -468,7 +559,6 @@ class ReelsBlockerService : AccessibilityService() {
 
     /** Remove o overlay mantendo `ultimoEstado` (usado ao redesenhar). */
     private fun removerOverlay() {
-        handler.removeCallbacks(vigia)
         overlay?.let { v ->
             runCatching { (getSystemService(WINDOW_SERVICE) as WindowManager).removeView(v) }
         }

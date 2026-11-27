@@ -13,7 +13,7 @@ Data: 2026-11-26 · Escopo: código (Kotlin), manifesto, pacotes de release (APK
 | Execução dinâmica | Nenhuma (`exec`, reflexão, `loadLibrary`, classes carregadas) |
 | Backup | `allowBackup=false` + `dataExtractionRules` excluindo tudo (nuvem e transferência) |
 | Depurável | Não (release: `flags=HAS_CODE ALLOW_CLEAR_USER_DATA`; `run-as` negado) |
-| Logs | Release: 10 linhas por sessão, sendo 1 própria (`tela de Reels (<id>): VOLTAR`), sem conteúdo do Instagram. O mapeamento (despeja a árvore) só existe em build debug |
+| Logs | Release: 10 linhas por sessão, sendo 2 próprias (`tela de Reels (<id>): VOLTAR` e `Reels permitido=<bool> ...`, só booleanos), sem conteúdo do Instagram. O mapeamento (despeja a árvore) só existe em build debug |
 
 ## Achados e correções
 

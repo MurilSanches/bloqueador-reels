@@ -17,7 +17,7 @@ Idioma padrão: **Português (Brasil)**.
 | Site | https://murilsanches.github.io/bloqueador-reels/ | |
 | Política de privacidade (URL) | https://murilsanches.github.io/bloqueador-reels/politica-de-privacidade.html | |
 
-## Descrição completa (cole inteira; usa ~2.100 de 4.000 caracteres)
+## Descrição completa (cole inteira; usa ~2.600 de 4.000 caracteres)
 
 ```
 Cansou de cair no Reels sem querer? O Bloqueador de Reels tira a aba Reels da barra do Instagram e, se um Reels abrir por outro caminho (vídeo no feed, pesquisa, perfil, link ou mensagem), leva você de volta sozinho.
@@ -26,18 +26,19 @@ COMO FUNCIONA
 • Desenha uma barra própria por cima da barra de baixo do Instagram, sem o botão de Reels. Os outros botões continuam funcionando, com toque e toque longo.
 • Se a tela de Reels abrir por qualquer caminho, o app volta sozinho e mostra "Reels bloqueado".
 • Um interruptor "Bloquear Reels" liga e pausa o bloqueio quando você quiser.
+• Duas opções, desligadas por padrão: "Permitir Reels de links" (abrir o Reels que chegou por um link de fora do Instagram, como o do WhatsApp) e "Permitir Reels do chat" (abrir o Reels que alguém mandou numa conversa). O resto continua bloqueado.
 • A barra substituta acompanha o tema claro ou escuro do celular, como o Instagram, e o app tem um interruptor de modo escuro.
 
 PRIVACIDADE
 • Tudo acontece no seu celular. O app não tem permissão de internet, não coleta e não envia nenhum dado.
-• Ele só olha o app do Instagram: os botões da barra de baixo, o número de mensagens não lidas (para mostrá-lo na barra) e se a tela de Reels está aberta. Não lê o conteúdo das mensagens, senhas, textos digitados nem outros apps.
+• Ele só olha o app do Instagram: os botões da barra de baixo, o número de mensagens não lidas (para mostrá-lo na barra) e se a tela de Reels está aberta (com a opção do chat, se ele veio de uma conversa, sem ler nomes nem mensagens). Não lê o conteúdo das mensagens, senhas, textos digitados nem outros apps.
 
 POR QUE O APP USA O SERVIÇO DE ACESSIBILIDADE
 Este app usa a API do Serviço de Acessibilidade do Android. Ele NÃO é uma ferramenta para pessoas com deficiência; usa a API para esta função: bloquear o Reels no Instagram por escolha sua. Em detalhe, ele usa o serviço para:
 1) identificar, na tela do Instagram, os botões da barra de baixo, o número de mensagens não lidas (só o número, para mostrá-lo na barra) e se a tela de Reels está aberta;
 2) desenhar a barra substituta sobre a barra original;
 3) tocar nos botões reais do Instagram quando você toca na barra substituta;
-4) executar a ação "voltar" quando a tela de Reels abre.
+4) executar a ação "voltar" quando a tela de Reels abre, exceto nos Reels que você permitiu pelas opções de link e de chat.
 Antes de ativar, o app mostra um aviso explicando isso e pede o seu consentimento. Você pode recusar e pode desligar o serviço a qualquer momento em Configurações › Acessibilidade.
 
 LIMITAÇÕES

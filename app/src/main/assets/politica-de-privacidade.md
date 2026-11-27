@@ -9,7 +9,9 @@ O app usa o **Serviço de Acessibilidade do Android** para esconder a aba Reels 
 - identifica os botões da barra de navegação inferior (por identificador e descrição de acessibilidade), o número de mensagens não lidas exibido no botão de mensagens (somente o número, usado apenas para mostrá-lo na barra substituta) e se a tela de Reels está visível;
 - desenha uma barra substituta sobre a barra original;
 - toca nos botões do Instagram quando você toca na barra substituta;
-- executa a ação "voltar" do sistema quando a tela de Reels abre.
+- executa a ação "voltar" do sistema quando a tela de Reels abre, a não ser que você tenha ligado uma das opções abaixo (ambas vêm desligadas);
+- com a opção **"Permitir Reels do chat"** ligada, confere se a tela de Reels aberta traz o elemento "enviado por" de uma conversa, para deixar esse Reels aberto. Só a presença do elemento é verificada: o nome de quem enviou e o conteúdo da conversa não são lidos;
+- com a opção **"Permitir Reels de links"** ligada, percebe quando o Instagram volta à frente vindo de outro app (por exemplo, ao abrir um link do WhatsApp), para deixar o Reels aberto por esse link. Para isso, enquanto o Instagram está na frente, o app confere somente o nome do aplicativo em primeiro plano.
 O serviço é configurado para receber **apenas eventos do Instagram** (o filtro é feito pelo próprio Android). Para saber se o Instagram ainda está na frente e remover a barra substituta quando você sai dele, o app confere somente o **nome do aplicativo em primeiro plano**, sem ler o conteúdo dele.
 ## O que o app NÃO faz
 - Não lê mensagens, senhas, textos digitados, nomes de contas, legendas nem o conteúdo de publicações.
@@ -17,7 +19,7 @@ O serviço é configurado para receber **apenas eventos do Instagram** (o filtro
 - Não envia informações para servidores, para o desenvolvedor ou para terceiros.
 - Não usa anúncios, ferramentas de análise ou bibliotecas de rastreamento.
 ## Dados guardados no seu aparelho
-Apenas configurações do próprio app, armazenadas localmente: se o bloqueio está ligado, se o modo escuro do app está ligado, se você aceitou o aviso de uso da Acessibilidade e dois horários internos usados para avisar quando a barra do Instagram não foi reconhecida. Esses dados não saem do aparelho e são apagados ao desinstalar o app.
+Apenas configurações do próprio app, armazenadas localmente: se o bloqueio está ligado, se o modo escuro do app está ligado, se as opções de permitir Reels de links e do chat estão ligadas, se você aceitou o aviso de uso da Acessibilidade e dois horários internos usados para avisar quando a barra do Instagram não foi reconhecida. Esses dados não saem do aparelho e são apagados ao desinstalar o app.
 ## Consentimento e controle
 Antes de ativar o serviço, o app mostra um aviso e pede o seu consentimento; você pode recusar. Você pode pausar o bloqueio no interruptor do app, desativar o serviço a qualquer momento em **Configurações › Acessibilidade › Bloqueador de Reels**, ou desinstalar o app.
 ## Crianças

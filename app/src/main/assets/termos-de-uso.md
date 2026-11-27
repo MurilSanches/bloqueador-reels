@@ -5,7 +5,7 @@
 ## 1. Aceitação
 Ao instalar ou usar o Bloqueador de Reels, você concorda com estes Termos e com a Política de Privacidade. Se não concordar, não use o app e desinstale-o.
 ## 2. O que é o app
-O Bloqueador de Reels é uma ferramenta independente que, por escolha sua, esconde a aba Reels no aplicativo oficial do Instagram e volta automaticamente quando a tela de Reels abre. Ele funciona por meio do Serviço de Acessibilidade do Android, que você ativa e pode desativar quando quiser.
+O Bloqueador de Reels é uma ferramenta independente que, por escolha sua, esconde a aba Reels no aplicativo oficial do Instagram e volta automaticamente quando a tela de Reels abre. Por escolha sua, você pode permitir os Reels abertos por um link de fora do Instagram ou enviados numa conversa; essas opções vêm desligadas. Ele funciona por meio do Serviço de Acessibilidade do Android, que você ativa e pode desativar quando quiser.
 ## 3. Sem afiliação
 O app não tem afiliação, aprovação ou patrocínio do Instagram ou da Meta. Instagram e Reels são marcas de seus respectivos titulares. O uso do Instagram continua sujeito aos termos e às políticas dele.
 ## 4. Licença de uso

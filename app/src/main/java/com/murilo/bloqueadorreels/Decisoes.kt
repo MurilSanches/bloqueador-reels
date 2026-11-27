@@ -22,6 +22,44 @@ object Decisoes {
         else -> AcaoReels.VOLTAR
     }
 
+    /** Depois de entrar no Instagram vindo de fora, por quanto tempo a entrada ainda conta como "por link". */
+    const val ENTRADA_EXTERNA_MAX_MS = 20_000L
+
+    /**
+     * A entrada "de fora" (Instagram saiu de cena e voltou) só vale por um tempo: se o Reels não
+     * apareceu logo, o usuário abriu o app normalmente e qualquer Reels depois disso é navegação.
+     */
+    fun entradaExternaValida(entradaExterna: Boolean, msDesdeEntrada: Long): Boolean =
+        entradaExterna && msDesdeEntrada in 0..ENTRADA_EXTERNA_MAX_MS
+
+    /**
+     * Outro app/sistema assumiu a tela? Pacote nulo (raiz sumiu numa transição de tela do próprio
+     * Instagram) NÃO é saída: tratá-lo assim gerava uma "entrada de fora" falsa e liberava Reels.
+     */
+    fun saiuDoInstagram(pacoteAtivo: String?, pacoteInstagram: String): Boolean =
+        pacoteAtivo != null && pacoteAtivo != pacoteInstagram
+
+    /** No primeiro Reels do viewer = o pager ainda não oferece "rolar para trás". */
+    fun noPrimeiroDoViewer(podeRolarParaTras: Boolean): Boolean = !podeRolarParaTras
+
+    /**
+     * Reels aberto é permitido?
+     * - por link: o Reels veio da entrada de fora (ou já estava liberado por ela) e o viewer ainda está
+     *   no primeiro Reels; ao deslizar para o próximo a liberação acaba;
+     * - por chat: o Reels traz o "enviado por" de uma conversa (conferido a cada leitura, então ao
+     *   deslizar para um Reels que não é da conversa ele volta a ser bloqueado).
+     * Com as duas opções desligadas nada é permitido.
+     */
+    fun reelsPermitido(
+        permitirLink: Boolean,
+        entradaExternaValida: Boolean,
+        liberadoPorLink: Boolean,
+        permitirChat: Boolean,
+        viewerDoChat: Boolean,
+        noPrimeiro: Boolean = true
+    ): Boolean =
+        (permitirLink && noPrimeiro && (entradaExternaValida || liberadoPorLink)) || (permitirChat && viewerDoChat)
+
     private val NUMERO_BADGE = Regex("^\\d{1,3}\\+?$")
 
     /**

@@ -17,7 +17,12 @@ data class Assinaturas(
     val reelsViewerIds: List<String>,
     val botoes: List<AssinaturaBotao>,
     /** IDs do contador de não lidas dentro de um botão (ex.: bolinha das mensagens). */
-    val badgeIds: List<String> = emptyList()
+    val badgeIds: List<String> = emptyList(),
+    /**
+     * IDs que só existem no Reels aberto a partir de uma conversa ("enviado por"). Só a presença
+     * da view é conferida; nome e texto nunca são lidos.
+     */
+    val reelsChatIds: List<String> = emptyList()
 ) {
     /**
      * Reconhece o botão por ID (exato) ou, se o ID não bater, por descrição de conteúdo.
@@ -40,9 +45,9 @@ data class Assinaturas(
     fun valida(): Boolean {
         fun curto(s: String, max: Int) = s.isNotBlank() && s.length <= max
         if (containerBarraIds.size !in 1..MAX_IDS || reelsViewerIds.size !in 1..MAX_IDS) return false
-        if (badgeIds.size > MAX_IDS) return false
+        if (badgeIds.size > MAX_IDS || reelsChatIds.size > MAX_IDS) return false
         if (botoes.size !in 1..MAX_BOTOES || botoes.none { it.chave == "reels" }) return false
-        val ids = containerBarraIds + reelsViewerIds + badgeIds + botoes.flatMap { it.ids }
+        val ids = containerBarraIds + reelsViewerIds + badgeIds + reelsChatIds + botoes.flatMap { it.ids }
         if (ids.any { !curto(it, MAX_TEXTO) || !it.startsWith(PREFIXO_ID_INSTAGRAM) }) return false
         return botoes.all { b ->
             curto(b.chave, 32) && b.ids.size <= MAX_IDS && b.descricoes.size <= MAX_DESCRICOES &&
@@ -87,7 +92,8 @@ data class Assinaturas(
                 containerBarraIds = o.optJSONArray("containerBarraIds").paraLista(),
                 reelsViewerIds = o.optJSONArray("reelsViewerIds").paraLista(),
                 botoes = botoes,
-                badgeIds = o.optJSONArray("badgeIds").paraLista()
+                badgeIds = o.optJSONArray("badgeIds").paraLista(),
+                reelsChatIds = o.optJSONArray("reelsChatIds").paraLista()
             )
         }
 

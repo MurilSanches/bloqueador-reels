@@ -8,6 +8,8 @@ object Prefs {
     const val CONSENTIMENTO = "consentimento_acessibilidade"
     const val MODO_MAPEAMENTO = "modo_mapeamento"
     const val TEMA_APP = "tema_app"
+    const val PERMITIR_REELS_LINK = "permitir_reels_link"
+    const val PERMITIR_REELS_CHAT = "permitir_reels_chat"
 
     const val SAUDE_SEM_RECONHECER_DESDE = "saude_sem_reconhecer_desde"
     const val SAUDE_ULTIMO_USO = "saude_ultimo_uso"
@@ -38,6 +40,16 @@ object Prefs {
     fun ocultarReels(ctx: Context) = prefs(ctx).getBoolean(IG_OCULTAR_REELS, true)
     fun setOcultarReels(ctx: Context, valor: Boolean) =
         prefs(ctx).edit().putBoolean(IG_OCULTAR_REELS, valor).apply()
+
+    /** Deixa ver o Reels aberto por um link de fora do Instagram (ex.: WhatsApp). Padrão: desligado. */
+    fun permitirReelsLink(ctx: Context) = prefs(ctx).getBoolean(PERMITIR_REELS_LINK, false)
+    fun setPermitirReelsLink(ctx: Context, valor: Boolean) =
+        prefs(ctx).edit().putBoolean(PERMITIR_REELS_LINK, valor).apply()
+
+    /** Deixa ver o Reels enviado numa conversa (mensagem direta) do Instagram. Padrão: desligado. */
+    fun permitirReelsChat(ctx: Context) = prefs(ctx).getBoolean(PERMITIR_REELS_CHAT, false)
+    fun setPermitirReelsChat(ctx: Context, valor: Boolean) =
+        prefs(ctx).edit().putBoolean(PERMITIR_REELS_CHAT, valor).apply()
 
     fun consentimento(ctx: Context) = prefs(ctx).getBoolean(CONSENTIMENTO, false)
     fun setConsentimento(ctx: Context, valor: Boolean) =

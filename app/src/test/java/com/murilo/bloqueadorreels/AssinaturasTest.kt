@@ -59,6 +59,15 @@ class AssinaturasTest {
     }
 
     @Test
+    fun idsDoReelsDeChatVemDoArquivoEPrecisamSerDoInstagram() {
+        assertTrue(assin.reelsChatIds.isNotEmpty())
+        val adulterado = validoTexto.replace(
+            "com.instagram.android:id/sender_timestamp", "com.banco.app:id/saldo"
+        )
+        assertNull(Assinaturas.deJsonOuNull(adulterado))
+    }
+
+    @Test
     fun jsonMalformadoOuVazioViraNullSemExcecao() {
         listOf("", "   ", "{", "[]", "null", "not json", "{\"botoes\": 5}", "{\"botoes\": [1,2]}")
             .forEach { assertNull(it, Assinaturas.deJsonOuNull(it)) }

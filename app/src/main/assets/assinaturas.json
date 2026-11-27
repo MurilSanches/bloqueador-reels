@@ -6,6 +6,10 @@
   "reelsViewerIds": [
     "com.instagram.android:id/clips_viewer_view_pager"
   ],
+  "reelsChatIds": [
+    "com.instagram.android:id/sender_username_or_fullname",
+    "com.instagram.android:id/sender_timestamp"
+  ],
   "badgeIds": [
     "com.instagram.android:id/notification"
   ],

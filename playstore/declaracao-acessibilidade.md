@@ -7,7 +7,7 @@ Marque que o app **não** é uma ferramenta de acessibilidade (o manifesto já d
 
 ## 1. Qual a funcionalidade principal do app?
 
-Bloquear o Reels no app do Instagram por escolha do usuário (bem-estar digital): esconder o botão de Reels da barra inferior e voltar automaticamente se a tela de Reels abrir por outro caminho.
+Bloquear o Reels no app do Instagram por escolha do usuário (bem-estar digital): esconder o botão de Reels da barra inferior e voltar automaticamente se a tela de Reels abrir por outro caminho. Por escolha do usuário (opções desligadas por padrão), deixa ver o Reels aberto por um link de outro app ou enviado numa conversa.
 
 ## 2. Por que o app precisa da API de Acessibilidade?
 
@@ -23,14 +23,14 @@ O Android não oferece outra forma de (a) saber o que está na tela de outro app
 
 | Recurso | Uso |
 |---|---|
-| `canRetrieveWindowContent` + `flagReportViewIds` | Limitação honesta: o Android não restringe a leitura de conteúdo por pacote, só os eventos; a restrição de leitura ao Instagram é feita pelo código (verificação do pacote antes de qualquer leitura). Só no pacote `com.instagram.android`: lê IDs e descrições dos botões da barra inferior, lê o número de mensagens não lidas do botão de mensagens (somente dígitos, validados; só para exibir na barra substituta, nunca guardado) e verifica se o visualizador de Reels está visível. Não lê textos de posts, mensagens, nomes, senhas nem texto digitado. |
+| `canRetrieveWindowContent` + `flagReportViewIds` | Limitação honesta: o Android não restringe a leitura de conteúdo por pacote, só os eventos; a restrição de leitura ao Instagram é feita pelo código (verificação do pacote antes de qualquer leitura). Só no pacote `com.instagram.android`: lê IDs e descrições dos botões da barra inferior, lê o número de mensagens não lidas do botão de mensagens (somente dígitos, validados; só para exibir na barra substituta, nunca guardado) e verifica se o visualizador de Reels está visível. Com a opção "Permitir Reels do chat" ligada, verifica também se o visualizador traz o elemento "enviado por" (apenas a presença do ID de view; nome e texto não são lidos). Não lê textos de posts, mensagens, nomes, senhas nem texto digitado. |
 | Eventos `typeWindowStateChanged` e `typeWindowContentChanged`, com `android:packageNames="com.instagram.android"` | Saber quando a tela do Instagram mudou. O próprio Android só entrega ao serviço eventos do Instagram (testado: nenhum evento de launcher, Chrome ou sistema chega). |
-| Vigilância do overlay (**só enquanto a barra substituta está na tela**) e `flagRetrieveInteractiveWindows` | Várias vezes por segundo consulta só metadados das janelas (identificador da janela ativa). Quando a janela ativa muda, e também a cada 0,6 s, lê apenas o nome do pacote da janela ativa, para remover a barra se o usuário sair do Instagram (outro app, diálogo do sistema, tela de bloqueio). Não lê título nem conteúdo dessas janelas. |
+| Vigilância do overlay (**enquanto a barra substituta está na tela e, só com a opção "Permitir Reels de links" ligada, também enquanto o Instagram está na frente**, para saber quando ele volta vindo de outro app) e `flagRetrieveInteractiveWindows` | Várias vezes por segundo consulta só metadados das janelas (identificador da janela ativa). Quando a janela ativa muda, e também a cada 0,6 s, lê apenas o nome do pacote da janela ativa, para remover a barra se o usuário sair do Instagram (outro app, diálogo do sistema, tela de bloqueio). Não lê título nem conteúdo dessas janelas. |
 | Overlay `TYPE_ACCESSIBILITY_OVERLAY` | Desenha a barra substituta sobre a barra do Instagram. |
 | `performAction(CLICK / LONG_CLICK)` | Só quando o **usuário toca** na barra substituta: repassa o toque ao botão real. |
-| `performGlobalAction(BACK / HOME)` | Quando a tela de Reels abre: volta (e usa início só se o "voltar" não resolver). |
+| `performGlobalAction(BACK / HOME)` | Quando a tela de Reels abre: volta (e usa início só se o "voltar" não resolver), exceto nos Reels que o usuário permitiu pelas opções de link e de chat. |
 
-Dados: nada é gravado além de preferências do próprio app (interruptor, tema, aceite, horários internos de diagnóstico). Nada é enviado: o app **não tem a permissão de internet**.
+Dados: nada é gravado além de preferências do próprio app (interruptor, tema, opções de Reels de links e do chat, aceite, horários internos de diagnóstico). Nada é enviado: o app **não tem a permissão de internet**.
 
 ## 4. Divulgação em destaque e consentimento (dentro do app)
 

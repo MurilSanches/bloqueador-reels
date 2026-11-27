@@ -179,8 +179,8 @@ private fun TelaAviso(
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
-    ItemAviso("O que ele lê", "Só a tela do Instagram: os botões da barra de baixo, o número de mensagens não lidas do botão de mensagens (só o número, para mostrá-lo na barra, como o Instagram faz) e se a tela de Reels está aberta. O Android entrega ao serviço apenas os eventos do Instagram. Para saber se o Instagram ainda está na tela, o app confere só o nome do app que está na frente, sem ler o conteúdo dele. Não lê mensagens, senhas nem textos digitados.")
-    ItemAviso("Por que lê", "Para esconder o botão de Reels, desenhando uma barra própria por cima, e para voltar quando o Reels abrir por outro caminho.")
+    ItemAviso("O que ele lê", "Só a tela do Instagram: os botões da barra de baixo, o número de mensagens não lidas do botão de mensagens (só o número, para mostrá-lo na barra, como o Instagram faz) e se a tela de Reels está aberta. Se você ligar a opção de Reels do chat, também confere se o Reels aberto traz o \"enviado por\" de uma conversa (só a presença, sem ler nomes nem mensagens). O Android entrega ao serviço apenas os eventos do Instagram. Para saber se o Instagram ainda está na tela, o app confere só o nome do app que está na frente, sem ler o conteúdo dele; com a opção de Reels de links ligada, isso vale sempre que o Instagram está na tela, para saber quando ele volta à frente vindo de outro app. Não lê mensagens, senhas nem textos digitados.")
+    ItemAviso("Por que lê", "Para esconder o botão de Reels, desenhando uma barra própria por cima, e para voltar quando o Reels abrir por outro caminho, salvo os Reels de links e do chat que você escolher permitir (opções desligadas por padrão).")
     ItemAviso("Para onde vai", "Nada sai do celular. O app não tem permissão de internet e não guarda o que lê.")
     ItemAviso("Controle", "Você desliga o serviço quando quiser em Configurações › Acessibilidade.")
     Button(onClick = onAceitar, modifier = Modifier.fillMaxWidth().height(52.dp)) {
@@ -242,6 +242,24 @@ private fun TelaPrincipal(
 
     Secao("Barra de baixo do Instagram")
     CartaoPrevia(semReels = servicoAtivo && bloquear)
+
+    Secao("Reels que chegam até você")
+    var porLink by remember { mutableStateOf(Prefs.permitirReelsLink(ctx)) }
+    CartaoOpcao(
+        titulo = "Permitir Reels de links",
+        texto = "Deixa abrir o Reels de um link de fora do Instagram (por exemplo, do WhatsApp). " +
+            "O que você abre dentro do Instagram continua bloqueado.",
+        ligado = porLink,
+        onMudar = { porLink = it; Prefs.setPermitirReelsLink(ctx, it) }
+    )
+    var porChat by remember { mutableStateOf(Prefs.permitirReelsChat(ctx)) }
+    CartaoOpcao(
+        titulo = "Permitir Reels do chat",
+        texto = "Deixa abrir o Reels que alguém mandou numa conversa do Instagram. " +
+            "Se você deslizar para o próximo, ele é bloqueado.",
+        ligado = porChat,
+        onMudar = { porChat = it; Prefs.setPermitirReelsChat(ctx, it) }
+    )
 
     Secao("Aparência")
     CartaoModoEscuro(escuro, onEscuro)
@@ -492,6 +510,28 @@ private fun CartaoModoEscuro(escuro: Boolean, onEscuro: (Boolean) -> Unit) {
             }
             Spacer(Modifier.size(12.dp))
             Switch(checked = escuro, onCheckedChange = onEscuro)
+        }
+    }
+}
+
+@Composable
+private fun CartaoOpcao(titulo: String, texto: String, ligado: Boolean, onMudar: (Boolean) -> Unit) {
+    Card(
+        Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(titulo, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(
+                    texto,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(Modifier.size(12.dp))
+            Switch(checked = ligado, onCheckedChange = onMudar)
         }
     }
 }
