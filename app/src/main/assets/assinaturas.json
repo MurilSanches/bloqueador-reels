@@ -10,6 +10,12 @@
     "com.instagram.android:id/sender_username_or_fullname",
     "com.instagram.android:id/sender_timestamp"
   ],
+  "reelsReservaIds": [
+    "com.instagram.android:id/clips_ufi_component",
+    "com.instagram.android:id/clips_media_component",
+    "com.instagram.android:id/clips_author_info_component",
+    "com.instagram.android:id/clips_caption_component"
+  ],
   "badgeIds": [
     "com.instagram.android:id/notification"
   ],
