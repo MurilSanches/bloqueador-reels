@@ -34,6 +34,8 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # histórico e tags, para montar as notas da versão
 
       - uses: actions/setup-java@v4
         with:
@@ -100,12 +102,25 @@ jobs:
           path: bloqueador-reels-v*.aab
           retention-days: 30
 
+      # Notas = título dos commits desde a versão anterior (sem os de CI/docs). Escreva o título do
+      # commit pensando no usuário: ele vira o "O que há de novo" da Play (limite de 500 caracteres).
+      - name: Notas da versão
+        run: |
+          prev=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
+          if [ -n "$prev" ]; then faixa="$prev..HEAD"; else faixa="-n 10"; fi
+          git log $faixa --no-merges --pretty='- %s' \
+            | grep -v -i -E '^- (CI|docs?)[:(]' > notas.md || true
+          [ -s notas.md ] || echo "- Melhorias e correções." > notas.md
+          mkdir -p whatsnew
+          head -c 480 notas.md | iconv -f utf-8 -t utf-8 -c > whatsnew/whatsnew-pt-BR
+          echo "--- notas ---"; cat notas.md
+
       - name: GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "v${{ steps.v.outputs.name }}" "bloqueador-reels-v${{ steps.v.outputs.name }}.aab" \
-            --title "v${{ steps.v.outputs.name }}" --generate-notes --target "$GITHUB_SHA"
+            --title "v${{ steps.v.outputs.name }}" --notes-file notas.md --target "$GITHUB_SHA"
 
       - name: Google Play configurada?
         id: play
@@ -129,5 +144,6 @@ jobs:
           packageName: ${{ env.PACOTE }}
           releaseFiles: bloqueador-reels-v${{ steps.v.outputs.name }}.aab
           releaseName: v${{ steps.v.outputs.name }}
+          whatsNewDirectory: whatsnew
           track: ${{ vars.PLAY_TRACK || 'internal' }}
           status: ${{ vars.PLAY_STATUS || 'completed' }}

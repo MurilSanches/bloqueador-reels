@@ -11,6 +11,10 @@ Workflow: `.github/workflows/release.yml`.
 
 Pushes que só mexem em `docs/`, `playstore/`, `README.md`, `CLAUDE.md`, `SEGURANCA.md` ou `LICENSE` **não** geram versão. Para pular uma versão de propósito, ponha `[skip ci]` na mensagem do commit.
 
+## Notas da versão
+
+Geradas sozinhas: a lista de títulos dos commits desde a versão anterior (sem os que começam com `CI:` ou `docs:`) vira o texto do GitHub Release e o "O que há de novo" da Play (cortado em 480 caracteres). **Escreva o título do commit pensando no usuário** (ex.: "Barra do Instagram não pisca mais ao trocar de aba"). Sem nenhum commit elegível, sai "Melhorias e correções."
+
 ## Versionamento
 
 - `versionName` = `0.1.<nº da execução>` (base `VERSAO_BASE` no workflow; mude para `0.2` quando quiser subir minor/major).
