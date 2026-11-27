@@ -13,7 +13,7 @@ Pushes que só mexem em `docs/`, `playstore/`, `README.md`, `CLAUDE.md`, `SEGURA
 
 ## Notas da versão
 
-Geradas sozinhas: a lista de títulos dos commits desde a versão anterior (sem os que começam com `CI:` ou `docs:`) vira o texto do GitHub Release e o "O que há de novo" da Play (cortado em 480 caracteres). **Escreva o título do commit pensando no usuário** (ex.: "Barra do Instagram não pisca mais ao trocar de aba"). Sem nenhum commit elegível, sai "Melhorias e correções."
+Geradas sozinhas: a lista de títulos dos commits desde a versão anterior (sem os que começam com `CI:` ou `docs:`) vira a seção "O que mudou" do GitHub Release (seguida do "Full Changelog" gerado pelo GitHub, com o link de comparação) e o "O que há de novo" da Play (cortado em 480 caracteres). **Escreva o título do commit pensando no usuário** (ex.: "Barra do Instagram não pisca mais ao trocar de aba"). Sem nenhum commit elegível, sai "Melhorias e correções."
 
 ## Versionamento
 
