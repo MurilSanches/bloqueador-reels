@@ -40,8 +40,10 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # Instala o SDK do Android e aceita as licenças (o Gradle baixa o que faltar).
-      - uses: android-actions/setup-android@v3
+      # O ubuntu-latest já traz o Android SDK (ANDROID_HOME). Só aceita as licenças; o Gradle baixa o que faltar.
+      # (android-actions/setup-android@v3 falhava aqui: "Failed to find package 'tools'".)
+      - name: Aceitar licenças do Android SDK
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
 
       - uses: gradle/actions/setup-gradle@v4
 
