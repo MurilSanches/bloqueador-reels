@@ -23,3 +23,6 @@ playstore/video-funcionamento-LOCAL*
 playstore/video-consentimento.mp4
 playstore/screenshots/05-politica-de-privacidade.png
 playstore/screenshots/06-termos-de-uso.png
+
+# Execução por subagentes (scratch)
+.superpowers/
