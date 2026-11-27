@@ -26,6 +26,23 @@ class DecisoesTest {
     }
 
     @Test
+    fun telaVideoCurtoPeloIdPrincipal() {
+        assertTrue(Decisoes.telaVideoCurto(principalVisivel = true, reservaVisiveis = 0))
+    }
+
+    @Test
+    fun telaVideoCurtoPeloReservaExigeTodosOsSinaisJuntos() {
+        assertTrue(Decisoes.telaVideoCurto(false, Decisoes.MIN_RESERVA))
+        assertTrue(Decisoes.telaVideoCurto(false, Decisoes.MIN_RESERVA + 1))
+    }
+
+    @Test
+    fun umSinalDeReservaSozinhoNaoBasta() {
+        assertFalse(Decisoes.telaVideoCurto(false, Decisoes.MIN_RESERVA - 1))
+        assertFalse(Decisoes.telaVideoCurto(false, 0))
+    }
+
+    @Test
     fun badgeSoAceitaNumeroCurto() {
         assertEquals("3", Decisoes.textoBadge("3"))
         assertEquals("99+", Decisoes.textoBadge(" 99+ "))
