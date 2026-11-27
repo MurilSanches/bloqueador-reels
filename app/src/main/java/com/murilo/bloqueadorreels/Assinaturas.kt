@@ -52,6 +52,7 @@ data class Assinaturas(
         if (containerBarraIds.size !in 1..MAX_IDS || reelsViewerIds.size !in 1..MAX_IDS) return false
         if (badgeIds.size > MAX_IDS || reelsChatIds.size > MAX_IDS) return false
         if (reelsReservaIds.size > MAX_RESERVA) return false
+        if (reelsReservaIds.toSet().size != reelsReservaIds.size) return false
         if (botoes.size !in 1..MAX_BOTOES || botoes.none { it.chave == "reels" }) return false
         val ids = containerBarraIds + reelsViewerIds + badgeIds + reelsChatIds + reelsReservaIds +
             botoes.flatMap { it.ids }

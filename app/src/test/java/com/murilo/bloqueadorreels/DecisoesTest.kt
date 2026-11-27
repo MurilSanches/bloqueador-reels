@@ -31,7 +31,7 @@ class DecisoesTest {
     }
 
     @Test
-    fun telaVideoCurtoPeloReservaExigeTodosOsSinaisJuntos() {
+    fun telaVideoCurtoPeloReservaExigeDoisSinaisJuntos() {
         assertTrue(Decisoes.telaVideoCurto(false, Decisoes.MIN_RESERVA))
         assertTrue(Decisoes.telaVideoCurto(false, Decisoes.MIN_RESERVA + 1))
     }

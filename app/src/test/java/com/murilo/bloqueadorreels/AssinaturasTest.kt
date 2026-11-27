@@ -82,6 +82,13 @@ class AssinaturasTest {
     }
 
     @Test
+    fun idsDeReservaRepetidosSaoRecusados() {
+        val id = "\"${assin.reelsReservaIds.first()}\""
+        val adulterado = validoTexto.replace(Regex("\"reelsReservaIds\": \\[[^]]*]"), "\"reelsReservaIds\": [$id,$id]")
+        assertNull(Assinaturas.deJsonOuNull(adulterado))
+    }
+
+    @Test
     fun arquivoSemListaDeReservaAindaCarrega() {
         val sem = validoTexto.replace(Regex("\"reelsReservaIds\": \\[[^]]*],?"), "")
         val carregado = Assinaturas.deJsonOuNull(sem)
