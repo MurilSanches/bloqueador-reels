@@ -52,7 +52,7 @@ Fica com ciclo de vida, eventos, vigia de janela, bloqueio (`BACK`/`HOME`), link
 
 ## Testes
 - Os 32 testes atuais continuam passando (`./gradlew.bat testDebugUnitTest`).
-- Novos testes JVM: combinação principal/reserva (principal visível; só reserva + `tab_bar` ausente; reserva + `tab_bar` presente não conta; nenhum sinal), e `Assinaturas.valida()` rejeitando `reelsReservaIds` fora do prefixo.
+- Novos testes JVM: combinação principal/reserva (principal visível conta; 2 IDs de reserva juntos contam; 1 ID de reserva sozinho não conta; nenhum sinal não conta), e `Assinaturas.valida()` rejeitando `reelsReservaIds` fora do prefixo.
 - Emulador (`Medium_Phone_API_37.0`): `instagram://reels_home` bloqueia por `BACK`; trocar de aba não pisca a barra; toque longo no Perfil abre o seletor de contas; link/chat com as opções ligadas; claro e escuro.
 
 ## Pronto quando
