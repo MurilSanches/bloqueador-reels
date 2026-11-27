@@ -19,7 +19,7 @@ Data: 2026-11-26 · Escopo: código (Kotlin), manifesto, pacotes de release (APK
 
 | # | Severidade | Achado | Correção |
 |---|---|---|---|
-| 1 | Média (privacidade) | O serviço recebia eventos de **todos** os apps, contra o que o aviso prometia | `android:packageNames="com.instagram.android"`: o sistema só entrega eventos do Instagram (testado: launcher, Chrome e sistema não geram evento). Como deixou de haver aviso de "saí do Instagram", entrou uma vigilância de 0,6 s **só com a barra na tela**, que consulta apenas o nome do pacote da janela ativa e some com a barra se não for o Instagram |
+| 1 | Média (privacidade) | O serviço recebia eventos de **todos** os apps, contra o que o aviso prometia | `android:packageNames="com.instagram.android"`: o sistema só entrega eventos do Instagram (testado: launcher, Chrome e sistema não geram evento). Como deixou de haver aviso de "saí do Instagram", entrou uma vigilância **só com a barra na tela**: a cada 80 ms confere (`flagRetrieveInteractiveWindows`, só o id da janela ativa) se ela mudou; se mudou, ou a cada 0,6 s, consulta apenas o nome do pacote da janela ativa (janela de outro app sem foco, como flutuante/PiP, só sai na checagem de 0,6 s) e some com a barra se não for o Instagram |
 | 2 | Média | Arquivo de assinaturas sem validação (hoje local; amanhã remoto no passo 7) | `Assinaturas.valida()`: ≤ 64 KB, limites de listas e strings, **todo ID deve começar com `com.instagram.android:id/`**, exige botão `reels`. Inválido → cai no arquivo embutido |
 | 3 | Baixa | Receiver exportado do `profileinstaller` (protegido por `DUMP`) sem uso | Removido no manifesto |
 | 4 | Baixa | Sem regras de extração de dados (Android 12+) | `data_extraction_rules.xml` |

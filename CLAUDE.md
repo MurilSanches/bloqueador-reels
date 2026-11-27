@@ -17,11 +17,11 @@ Trocar entre debug e release no mesmo aparelho exige desinstalar (assinaturas di
 
 ## Segurança
 
-Relatório e testes em `SEGURANCA.md`. Regras que não podem regredir: sem permissão de internet (o aviso e a política prometem isso); serviço só com `android:packageNames="com.instagram.android"` e vigilância (`vigia`) que esconde a barra se a janela ativa não for o Instagram; `Assinaturas.valida()` em todo arquivo/JSON externo (IDs só `com.instagram.android:id/`); só `MainActivity` exportada; mapeamento só em debug. Qualquer mudança nisso exige atualizar o aviso, a política e a declaração de Acessibilidade.
+Relatório e testes em `SEGURANCA.md`. Regras que não podem regredir: sem permissão de internet (o aviso e a política prometem isso); serviço só com `android:packageNames="com.instagram.android"` e vigilância (`vigia`, 80 ms por metadados de janela + confirmação por pacote) que esconde a barra se a janela ativa não for o Instagram; `Assinaturas.valida()` em todo arquivo/JSON externo (IDs só `com.instagram.android:id/`); só `MainActivity` exportada; mapeamento só em debug. Qualquer mudança nisso exige atualizar o aviso, a política e a declaração de Acessibilidade.
 
 ## Play Store
 
-Pacote pronto em `playstore/` (AAB, ficha, gráficos, screenshots, política de privacidade, declaração de Acessibilidade, vídeo). Leia `playstore/LEIA-ME.md`. Antes de cada envio: aumentar `versionCode`, rodar `testDebugUnitTest bundleRelease lintRelease` e **atualizar a declaração de Acessibilidade e a política** se o app passar a ler/fazer algo novo (o texto lá descreve exatamente o código atual). O serviço declara só `typeWindowStateChanged|typeWindowContentChanged` e `flagReportViewIds`: não peça mais do que o código usa.
+Pacote pronto em `playstore/` (AAB, ficha, gráficos, screenshots, política de privacidade, declaração de Acessibilidade, vídeo). Leia `playstore/LEIA-ME.md`. Antes de cada envio: aumentar `versionCode`, rodar `testDebugUnitTest bundleRelease lintRelease` e **atualizar a declaração de Acessibilidade e a política** se o app passar a ler/fazer algo novo (o texto lá descreve exatamente o código atual). O serviço declara só `typeWindowStateChanged|typeWindowContentChanged`, `flagReportViewIds` e `flagRetrieveInteractiveWindows` (usada só pela `vigia`, para saber a cada 80 ms se a janela ativa mudou): não peça mais do que o código usa.
 
 ## Estrutura (`app/src/main/java/com/murilo/bloqueadorreels`)
 
@@ -48,6 +48,7 @@ Pacote pronto em `playstore/` (AAB, ficha, gráficos, screenshots, política de 
 - **Sem consentimento o serviço fica inerte** (`ativoParaInstagram()` exige `Prefs.consentimento`) e, ao conectar sem ele, abre o app no aviso. Testado: sem aceitar, a barra real e o Reels ficam intocados.
 - **Troca de tela dentro do Instagram não esconde o overlay**: relê em 30 ms e só esconde se a barra sumiu (antes o ícone de Reels piscava). Janela de outro pacote (teclado, sistema, outro app) esconde e agenda releitura.
 - **Bloqueio**: `BACK`; se o Reels continua aberto depois de 1,5 s, `HOME`; passados 4 s volta a ser `BACK` (`Decisoes`). Regras puras em `Decisoes.kt`, com teste.
+- **Sem piscar**: trocar de aba atualiza a barra no lugar (`atualizarBarra`) e dá destaque imediato ao toque; o overlay só é removido/recriado se mudar estrutura (bounds, tema, botões). `desenharBarra` nunca deve fazer remove+add em atualização simples.
 - **Toque longo** na barra substituta vira `ACTION_LONG_CLICK` no botão real (ex.: seletor de contas no Perfil).
 - **Aviso de saúde**: se o Instagram é usado por mais de 5 min sem reconhecer barra nem tela de Reels, a tela do app mostra "Barra do Instagram não reconhecida" (versão nova do Instagram). Gravado em `Prefs` a cada 30 s no máximo.
 - **Mapeamento só em build debug** (`Prefs.ehDebug`); no release o cartão some e o serviço ignora a preferência.

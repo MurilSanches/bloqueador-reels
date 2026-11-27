@@ -19,4 +19,4 @@ A chave de assinatura (`release.keystore`, `keystore.properties`) não faz parte
 
 ## Contato
 
-Murilo Studios · murilosanchesp@gmail.com
+Murilo Studios · murilostudiosoficial@gmail.com

@@ -37,7 +37,9 @@ class ReelsBlockerService : AccessibilityService() {
         private const val TAG = "ReelsBlocker"
         private const val DEBOUNCE_MS = 30L
         private const val INTERVALO_MIN_MS = 250L
-        private const val VIGIA_MS = 600L
+        private const val VIGIA_MS = 80L          // consulta leve (só metadados de janelas)
+        private const val VIGIA_PACOTE_MS = 600L  // confirmação periódica pelo pacote da janela ativa
+        private const val ABA_PENDENTE_MS = 500L
         private const val AVISO_INTERVALO_MS = 3000L
         private const val MAPA_INTERVALO_MS = 1500L
         private const val GRAVAR_SAUDE_A_CADA_MS = 30_000L
@@ -48,7 +50,12 @@ class ReelsBlockerService : AccessibilityService() {
     private val atualizar = Runnable { verificarBarra() }
 
     private lateinit var assinaturas: Assinaturas
-    private var overlay: View? = null
+    private var overlay: ViewGroup? = null
+    private var estadoDesenhado: EstadoBarra? = null
+    private var ultimaJanelaAtivaId = -1   // janela ativa na última confirmação de pacote da vigia
+    private var ultimaConfirmacaoPacote = 0L
+    private var abaPendente: String? = null // aba tocada na nossa barra, até o Instagram confirmar
+    private var abaPendenteAte = 0L
     private var ultimoEstado: EstadoBarra? = null
     private val botoesReais = mutableMapOf<String, AccessibilityNodeInfo>()
 
@@ -161,7 +168,13 @@ class ReelsBlockerService : AccessibilityService() {
         // Algumas versões do Instagram não marcam a aba ativa (isSelected sempre falso).
         // Nesse caso usamos a última aba tocada na nossa barra (começa em "home").
         val lido = leitura.estado
-        val ativa = Decisoes.abaAtiva(lido.selecionado, abaLocal)
+        // Toque recente: segura a aba tocada até o Instagram marcá-la (ou ~500 ms), para um evento
+        // que chegue antes da troca não devolver o destaque para a aba antiga.
+        val pendente = abaPendente?.takeIf {
+            SystemClock.uptimeMillis() < abaPendenteAte && lido.selecionado != it
+        }
+        if (pendente == null) abaPendente = null
+        val ativa = pendente ?: Decisoes.abaAtiva(lido.selecionado, abaLocal)
         abaLocal = ativa
         val estado = lido.copy(selecionado = ativa)
         if (estado == ultimoEstado) return
@@ -278,58 +291,98 @@ class ReelsBlockerService : AccessibilityService() {
         }
     )
 
-    private fun criarBarra(estado: EstadoBarra): View {
+    private fun ehVertical(estado: EstadoBarra) = estado.bounds.height() > estado.bounds.width()
+
+    private fun criarBarra(estado: EstadoBarra): ViewGroup {
         // Fundo do Instagram medido no emulador: claro #FFFFFF, escuro #0C1014 (não é preto puro).
         val corFundo = if (estado.modoEscuro) COR_FUNDO_ESCURO else Color.WHITE
-        // No Instagram todos os ícones têm a mesma cor (preto no claro, branco no escuro);
-        // o que muda entre ativo e inativo é contorno x preenchido.
-        val corIcone = if (estado.modoEscuro) Color.WHITE else Color.BLACK
         // Container alto e estreito (trilho lateral em tablet/dobrável): empilha na vertical.
-        val vertical = estado.bounds.height() > estado.bounds.width()
+        val vertical = ehVertical(estado)
         val barra = LinearLayout(this).apply {
             orientation = if (vertical) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
             setBackgroundColor(corFundo)
         }
-        estado.botoes.filter { it != "reels" }.forEach { chave ->
-            val ativo = chave == estado.selecionado
-            val botao = ImageButton(this).apply {
-                setImageResource(iconePara(chave, ativo)) // desenhos próprios no mesmo estilo
-                scaleType = ImageView.ScaleType.CENTER     // 24dp, como no Instagram
-                // Sem foco de teclado/D-pad: o destaque de foco padrão pintava um retângulo cinza.
-                isFocusable = false
-                isFocusableInTouchMode = false
-                defaultFocusHighlightEnabled = false
-                imageTintList = ColorStateList.valueOf(corIcone)
-                isSelected = ativo
-                background = null
-                contentDescription = descricaoPara(chave)
-                layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                setOnClickListener { acionarBotaoReal(chave, AccessibilityNodeInfo.ACTION_CLICK) }
-                // Toque longo (ex.: trocar de conta no Perfil) também chega ao botão real.
-                setOnLongClickListener {
-                    acionarBotaoReal(chave, AccessibilityNodeInfo.ACTION_LONG_CLICK)
-                    true
-                }
-            }
+        botoesVisiveis(estado).forEach { chave ->
             val espaco = FrameLayout(this).apply {
                 layoutParams = if (vertical) LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f)
                 else LinearLayout.LayoutParams(0, MATCH_PARENT, 1f)
-                if (ativo && !vertical) addView(criarPilula(estado.modoEscuro))
-                addView(botao)
-                estado.badges[chave]?.let { addView(criarBadge(it)) }
             }
+            preencherEspaco(espaco, chave, estado)
             barra.addView(espaco)
         }
         return barra
     }
 
+    private fun botoesVisiveis(estado: EstadoBarra) = estado.botoes.filter { it != "reels" }
+
+    /** Conteúdo de um botão (pílula, ícone, aviso). Refeito só nos botões que mudaram. */
+    private fun preencherEspaco(espaco: FrameLayout, chave: String, estado: EstadoBarra) {
+        // No Instagram todos os ícones têm a mesma cor (preto no claro, branco no escuro);
+        // o que muda entre ativo e inativo é contorno x preenchido.
+        val corIcone = if (estado.modoEscuro) Color.WHITE else Color.BLACK
+        val ativo = chave == estado.selecionado
+        val vertical = ehVertical(estado)
+        espaco.removeAllViews()
+        val botao = ImageButton(this).apply {
+            setImageResource(iconePara(chave, ativo)) // desenhos próprios no mesmo estilo
+            scaleType = ImageView.ScaleType.CENTER     // 24dp, como no Instagram
+            // Sem foco de teclado/D-pad: o destaque de foco padrão pintava um retângulo cinza.
+            isFocusable = false
+            isFocusableInTouchMode = false
+            defaultFocusHighlightEnabled = false
+            imageTintList = ColorStateList.valueOf(corIcone)
+            isSelected = ativo
+            background = null
+            contentDescription = descricaoPara(chave)
+            layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            setOnClickListener { acionarBotaoReal(chave, AccessibilityNodeInfo.ACTION_CLICK) }
+            // Toque longo (ex.: trocar de conta no Perfil) também chega ao botão real.
+            setOnLongClickListener {
+                acionarBotaoReal(chave, AccessibilityNodeInfo.ACTION_LONG_CLICK)
+                true
+            }
+        }
+        if (ativo && !vertical) espaco.addView(criarPilula(estado.modoEscuro))
+        espaco.addView(botao)
+        estado.badges[chave]?.let { espaco.addView(criarBadge(it)) }
+    }
+
+    /** Mesma janela serve se só mudaram aba ativa e avisos: evita remover/recriar o overlay (piscava). */
+    private fun mesmaEstrutura(a: EstadoBarra, b: EstadoBarra) =
+        a.bounds == b.bounds && a.modoEscuro == b.modoEscuro &&
+            botoesVisiveis(a) == botoesVisiveis(b)
+
+    /** Atualiza no lugar só os botões cuja aba ativa ou aviso mudou. */
+    private fun atualizarBarra(novo: EstadoBarra) {
+        val barra = overlay ?: return
+        val antigo = estadoDesenhado ?: return
+        botoesVisiveis(novo).forEachIndexed { i, chave ->
+            val mudou = (chave == antigo.selecionado) != (chave == novo.selecionado) ||
+                antigo.badges[chave] != novo.badges[chave]
+            if (mudou) (barra.getChildAt(i) as? FrameLayout)?.let { preencherEspaco(it, chave, novo) }
+        }
+        estadoDesenhado = novo
+    }
+
     private fun acionarBotaoReal(chave: String, acao: Int) {
         val no = botoesReais[chave]
         val ok = no != null && executar(no, acao)
-        if (ok && acao == AccessibilityNodeInfo.ACTION_CLICK) abaLocal = chave
-        // Feito: redesenha com a aba nova. Falhou (nó velho/não clicável): relê a barra.
-        ultimoEstado = null
+        // "Criar" abre o compositor, não vira aba: não ganha destaque.
+        if (ok && acao == AccessibilityNodeInfo.ACTION_CLICK && chave != "create") {
+            abaLocal = chave
+            abaPendente = chave
+            abaPendenteAte = SystemClock.uptimeMillis() + ABA_PENDENTE_MS
+            // Destaque imediato, sem recriar a janela: a releitura abaixo só confirma.
+            val atual = estadoDesenhado
+            if (overlay != null && atual != null) {
+                val novo = atual.copy(selecionado = chave)
+                atualizarBarra(novo)
+                ultimoEstado = novo
+            }
+        } else if (!ok) {
+            ultimoEstado = null // nó velho/não clicável: relê a barra
+        }
         handler.removeCallbacks(atualizar)
         handler.postDelayed(atualizar, if (ok) 150L else 0L)
     }
@@ -348,6 +401,12 @@ class ReelsBlockerService : AccessibilityService() {
     }
 
     private fun desenharBarra(estado: EstadoBarra) {
+        // Já na tela com a mesma estrutura: atualiza no lugar, sem piscar a barra real por baixo.
+        val atual = estadoDesenhado
+        if (overlay != null && atual != null && mesmaEstrutura(atual, estado)) {
+            atualizarBarra(estado)
+            return
+        }
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
         val r = estado.bounds
         val params = WindowManager.LayoutParams(
@@ -364,7 +423,12 @@ class ReelsBlockerService : AccessibilityService() {
             runCatching { wm.addView(it, params) }
                 .onFailure { e -> Log.w(TAG, "falha ao desenhar overlay", e); overlay = null }
         }
-        if (overlay != null) handler.postDelayed(vigia, VIGIA_MS)
+        estadoDesenhado = if (overlay != null) estado else null
+        if (overlay != null) {
+            ultimaConfirmacaoPacote = SystemClock.uptimeMillis()
+            ultimaJanelaAtivaId = janelaAtivaId()
+            handler.postDelayed(vigia, VIGIA_MS)
+        }
     }
 
     /**
@@ -376,13 +440,30 @@ class ReelsBlockerService : AccessibilityService() {
     private val vigia = object : Runnable {
         override fun run() {
             if (overlay == null) return
-            val ativo = rootInActiveWindow?.packageName?.toString()
-            if (ativo != PKG_INSTAGRAM) {
-                esconderOverlay()
-            } else {
-                handler.postDelayed(this, VIGIA_MS)
+            // A cada 80 ms: só metadados das janelas (id da ativa), sem tocar no processo do Instagram.
+            // Lê o pacote da janela ativa quando ela MUDOU (um por mudança: diálogo do próprio
+            // Instagram não repete a leitura) e, como rede de segurança, a cada VIGIA_PACOTE_MS.
+            // Limite: janela de outro app que NÃO toma o foco (flutuante, PiP) não muda a janela
+            // ativa; nesse caso a barra sai na confirmação periódica (até 0,6 s).
+            val agora = SystemClock.uptimeMillis()
+            val ativaId = janelaAtivaId()
+            if (ativaId != ultimaJanelaAtivaId || agora - ultimaConfirmacaoPacote >= VIGIA_PACOTE_MS) {
+                ultimaJanelaAtivaId = ativaId
+                ultimaConfirmacaoPacote = agora
+                val ativo = rootInActiveWindow?.packageName?.toString()
+                if (ativo != PKG_INSTAGRAM) return esconderOverlay()
             }
+            handler.postDelayed(this, VIGIA_MS)
         }
+    }
+
+    /** Id da janela ativa (-1 se não houver ou a lista vier vazia). Só metadados, sem IPC ao app. */
+    @Suppress("DEPRECATION")
+    private fun janelaAtivaId(): Int {
+        val lista = windows ?: return -1
+        val id = lista.firstOrNull { it.isActive }?.id ?: -1
+        lista.forEach { it.recycle() }
+        return id
     }
 
     /** Remove o overlay mantendo `ultimoEstado` (usado ao redesenhar). */
@@ -392,6 +473,8 @@ class ReelsBlockerService : AccessibilityService() {
             runCatching { (getSystemService(WINDOW_SERVICE) as WindowManager).removeView(v) }
         }
         overlay = null
+        estadoDesenhado = null
+        ultimaJanelaAtivaId = -1
     }
 
     /** Remove o overlay e esquece o estado, para o próximo evento reavaliar do zero. */
