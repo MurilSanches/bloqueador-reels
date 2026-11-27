@@ -33,7 +33,6 @@ import android.widget.Toast
 class ReelsBlockerService : AccessibilityService() {
 
     companion object {
-        const val PKG_INSTAGRAM = "com.instagram.android"
         private const val TAG = "ReelsBlocker"
         private const val DEBOUNCE_MS = 30L
         private const val INTERVALO_MIN_MS = 250L
@@ -49,7 +48,7 @@ class ReelsBlockerService : AccessibilityService() {
     private val handler = Handler(Looper.getMainLooper())
     private val atualizar = Runnable { verificarBarra() }
 
-    private lateinit var assinaturas: Assinaturas
+    private lateinit var alvo: InstagramAlvo
     private var overlay: ViewGroup? = null
     private var estadoDesenhado: EstadoBarra? = null
     private var ultimaJanelaAtivaId = -1   // janela ativa na última confirmação de pacote da vigia
@@ -101,7 +100,7 @@ class ReelsBlockerService : AccessibilityService() {
     }
 
     override fun onServiceConnected() {
-        assinaturas = Assinaturas.carregar(this)
+        alvo = InstagramAlvo(Assinaturas.carregar(this), this)
         carregarOpcoes()
         foraDoInstagram = true
         Prefs.prefs(this).registerOnSharedPreferenceChangeListener(ouvinte)
@@ -141,7 +140,7 @@ class ReelsBlockerService : AccessibilityService() {
 
         val janelaMudou = event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
 
-        if (pacote != PKG_INSTAGRAM) {
+        if (pacote != alvo.pacote) {
             // O sistema já filtra por pacote (accessibility_config.xml); isto é só uma segunda
             // barreira: nada de outro app é lido, e o overlay sai junto.
             if (janelaMudou) esconderOverlay()
@@ -177,12 +176,12 @@ class ReelsBlockerService : AccessibilityService() {
         ultimaVerificacao = SystemClock.uptimeMillis()
         if (!ativoParaInstagram()) return esconderOverlay()
         val root = rootInActiveWindow
-        if (root == null || root.packageName?.toString() != PKG_INSTAGRAM) return esconderOverlay()
+        if (root == null || root.packageName?.toString() != alvo.pacote) return esconderOverlay()
 
         if (Prefs.ehDebug(this) && Prefs.mapeamento(this)) despejarMapa(root)
 
         // Fase 4: tela de Reels aberta -> volta, salvo se veio de link/chat e a opção está ligada.
-        val idReels = reelsAbertoId(root)
+        val idReels = alvo.telaVideoCurto(root)
         if (idReels != null && !reelsPermitido(root, idReels)) {
             bloquearReels(idReels)
             registrarSaude(reconheceu = true)
@@ -190,7 +189,7 @@ class ReelsBlockerService : AccessibilityService() {
         }
 
         // Fase 2: lê a barra. Sem certeza -> não desenha nada.
-        val leitura = BarraReader.ler(root, assinaturas, modoEscuro())
+        val leitura = alvo.lerBarra(root, modoEscuro())
         registrarSaude(reconheceu = leitura != null || idReels != null)
         if (idReels == null) {
             ultimoReelsPermitido = false
@@ -233,9 +232,6 @@ class ReelsBlockerService : AccessibilityService() {
 
     // ---------- Fase 4 ----------
 
-    private fun reelsAbertoId(root: AccessibilityNodeInfo): String? =
-        assinaturas.reelsViewerIds.firstOrNull { id -> algumVisivel(root, id) }
-
     private fun algumVisivel(root: AccessibilityNodeInfo, id: String) =
         root.findAccessibilityNodeInfosByViewId(id).any { it.isVisibleToUser }
 
@@ -249,7 +245,7 @@ class ReelsBlockerService : AccessibilityService() {
         val primeiro = noPrimeiroReels(root, idReels)
         if (!primeiro) { entradaExterna = false; liberadoPorLink = false } // deslizou: liberação do link acabou
         val entrada = Decisoes.entradaExternaValida(entradaExterna, SystemClock.uptimeMillis() - entradaDesde)
-        val viaChat = permitirChat && assinaturas.reelsChatIds.any { algumVisivel(root, it) }
+        val viaChat = permitirChat && alvo.assinaturas.reelsChatIds.any { algumVisivel(root, it) }
         val ok = Decisoes.reelsPermitido(permitirLink, entrada, liberadoPorLink, permitirChat, viaChat, primeiro)
         if (permitirLink && primeiro && (entrada || liberadoPorLink)) liberadoPorLink = true
         if (ok != ultimoReelsPermitido) {
@@ -525,7 +521,7 @@ class ReelsBlockerService : AccessibilityService() {
                     // Instagram; só tira a barra e relê logo (senão virava "entrada de fora" e liberava Reels).
                     esconderOverlay()
                     agendar(DEBOUNCE_MS)
-                } else if (Decisoes.saiuDoInstagram(ativo, PKG_INSTAGRAM)) return sairDoInstagram()
+                } else if (Decisoes.saiuDoInstagram(ativo, alvo.pacote)) return sairDoInstagram()
             }
             vigiaAgendada = true
             handler.postDelayed(this, VIGIA_MS)
