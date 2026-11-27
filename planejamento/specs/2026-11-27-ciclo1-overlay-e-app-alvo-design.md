@@ -38,9 +38,9 @@ A lógica de link/chat (`reelsPermitido`, `entradaExterna`, `liberadoPorLink`) c
 ### Sinal reserva
 `telaVideoCurto` devolve não nulo se:
 - o ID principal (`reelsViewerIds`) está visível; **ou**
-- `tab_bar` não está visível **e** algum ID de `reelsReservaIds` (novo campo em `assinaturas.json`) está visível.
+- pelo menos `Decisoes.MIN_RESERVA` (2) IDs de `reelsReservaIds` (novo campo em `assinaturas.json`, no máximo 4) estão visíveis ao mesmo tempo.
 
-Os dois sinais do reserva são exigidos juntos para reduzir falso positivo. `reelsReservaIds` passa por `Assinaturas.valida()` (só IDs `com.instagram.android:id/`, como os demais). A combinação das condições é função pura em `Decisoes.kt`, testada na JVM. A primeira tarefa do plano mede no emulador (modo de mapeamento, build debug) quais IDs reais entram em `reelsReservaIds` na versão atual do Instagram.
+Dois IDs independentes juntos reduzem o falso positivo. Não se usa a ausência de `tab_bar` como condição: o Reels aberto pela aba Reels mantém a barra visível. `reelsReservaIds` passa por `Assinaturas.valida()` (só IDs `com.instagram.android:id/`). A regra de combinação é função pura em `Decisoes.kt`, testada na JVM. Os IDs vêm de `planejamento/medicoes/2026-11-27-reels-ids.md`.
 
 ### `ReelsBlockerService` depois
 Fica com ciclo de vida, eventos, vigia de janela, bloqueio (`BACK`/`HOME`), link/chat e saúde. Usa `InstagramAlvo` e `BarraOverlay`. O `accessibility_config.xml` continua com `packageNames="com.instagram.android"`.
@@ -48,7 +48,7 @@ Fica com ciclo de vida, eventos, vigia de janela, bloqueio (`BACK`/`HOME`), link
 ## Compatibilidade e riscos
 - Comportamento visível idêntico ao atual: bloqueio por `BACK`/`HOME` com as mesmas janelas de tempo, barra sem piscar, toque longo, badges, tema, link/chat.
 - Risco de regressão no desenho (piscar) ao mover código: coberto pela verificação no emulador.
-- Risco de falso positivo do reserva: mitigado pelos dois sinais; se a medição no emulador mostrar bloqueio indevido, o reserva fica só como aviso de saúde até ajustar.
+- Risco de falso positivo do reserva: mitigado por exigir dois IDs exclusivos do Reels juntos; se a medição no emulador mostrar bloqueio indevido, o reserva fica só como aviso de saúde até ajustar.
 
 ## Testes
 - Os 32 testes atuais continuam passando (`./gradlew.bat testDebugUnitTest`).

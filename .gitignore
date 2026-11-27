@@ -26,3 +26,7 @@ playstore/screenshots/06-termos-de-uso.png
 
 # Execução por subagentes (scratch)
 .superpowers/
+
+# Dumps da árvore do Instagram contêm feed real e contas: nunca versionar
+planejamento/medicoes/dump-*.txt
+planejamento/medicoes/ids-*.txt
