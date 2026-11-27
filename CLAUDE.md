@@ -25,9 +25,11 @@ Pacote pronto em `playstore/` (AAB, ficha, gráficos, screenshots, política de 
 
 ## Estrutura (`app/src/main/java/com/murilo/bloqueadorreels`)
 
-- `ReelsBlockerService` — eventos, debounce 30 ms, overlay (fase 3), bloqueio de Reels (fase 4), modo de mapeamento (fase 1).
+- `ReelsBlockerService` — ciclo de vida, eventos, debounce 30 ms, vigia, bloqueio de Reels (fase 4), link/chat, saúde, modo de mapeamento (fase 1). Usa `alvo: InstagramAlvo` e `barra: BarraOverlay`.
+- `AppAlvo` / `InstagramAlvo` — contrato por plataforma (pacote, `lerBarra`, `telaVideoCurto`, `EstiloBarra`). Plataforma nova (YouTube, TikTok) = nova implementação. `telaVideoCurto` aceita o ID principal ou ≥ 2 `reelsReservaIds` juntos (`Decisoes.telaVideoCurto`).
+- `BarraOverlay` — janela e views da barra substituta; genérica (ícones, cores e descrições vêm do `EstiloBarra`). `mostrar` atualiza no lugar se a estrutura não mudou (sem piscar).
 - `BarraReader` — `lerEstado` (fase 2). Sem certeza => `null` => não desenha.
-- `Assinaturas` + `assets/assinaturas.json` — IDs/descrições (pt/en) dos botões. `filesDir/assinaturas.json` sobrescreve o asset (gancho do passo 7).
+- `Assinaturas` + `assets/assinaturas.json` — IDs/descrições (pt/en) dos botões e IDs de reserva do Reels (`reelsReservaIds`, no máximo 4, medidos em `planejamento/medicoes/`). `filesDir/assinaturas.json` sobrescreve o asset (gancho do passo 7).
 - `Prefs`, `MainActivity` (Compose: aviso/consentimento, status do serviço, interruptor, mapeamento).
 
 ## Regras
