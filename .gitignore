@@ -18,3 +18,8 @@ keystore.properties
 
 # Contém feed real e conta de teste: nunca versionar
 playstore/video-funcionamento-LOCAL*
+
+# Material de envio da Play (fica só no disco; o vídeo vai para o YouTube)
+playstore/video-consentimento.mp4
+playstore/screenshots/05-politica-de-privacidade.png
+playstore/screenshots/06-termos-de-uso.png
