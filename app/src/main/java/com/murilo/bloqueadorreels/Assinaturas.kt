@@ -22,7 +22,12 @@ data class Assinaturas(
      * IDs que só existem no Reels aberto a partir de uma conversa ("enviado por"). Só a presença
      * da view é conferida; nome e texto nunca são lidos.
      */
-    val reelsChatIds: List<String> = emptyList()
+    val reelsChatIds: List<String> = emptyList(),
+    /**
+     * IDs de reserva do Reels aberto: só valem juntos (`Decisoes.telaVideoCurto`), para detectar a
+     * tela quando o ID principal mudar numa versão nova do Instagram. Só a presença é conferida.
+     */
+    val reelsReservaIds: List<String> = emptyList()
 ) {
     /**
      * Reconhece o botão por ID (exato) ou, se o ID não bater, por descrição de conteúdo.
@@ -46,8 +51,11 @@ data class Assinaturas(
         fun curto(s: String, max: Int) = s.isNotBlank() && s.length <= max
         if (containerBarraIds.size !in 1..MAX_IDS || reelsViewerIds.size !in 1..MAX_IDS) return false
         if (badgeIds.size > MAX_IDS || reelsChatIds.size > MAX_IDS) return false
+        if (reelsReservaIds.size > MAX_RESERVA) return false
+        if (reelsReservaIds.toSet().size != reelsReservaIds.size) return false
         if (botoes.size !in 1..MAX_BOTOES || botoes.none { it.chave == "reels" }) return false
-        val ids = containerBarraIds + reelsViewerIds + badgeIds + reelsChatIds + botoes.flatMap { it.ids }
+        val ids = containerBarraIds + reelsViewerIds + badgeIds + reelsChatIds + reelsReservaIds +
+            botoes.flatMap { it.ids }
         if (ids.any { !curto(it, MAX_TEXTO) || !it.startsWith(PREFIXO_ID_INSTAGRAM) }) return false
         return botoes.all { b ->
             curto(b.chave, 32) && b.ids.size <= MAX_IDS && b.descricoes.size <= MAX_DESCRICOES &&
@@ -68,6 +76,8 @@ data class Assinaturas(
         const val MAX_BYTES_ARQUIVO = 64 * 1024L
         private const val MAX_BOTOES = 20
         private const val MAX_IDS = 8
+        /** Cada ID de reserva custa uma consulta ao Instagram a cada leitura: poucos. */
+        private const val MAX_RESERVA = 4
         private const val MAX_DESCRICOES = 16
         private const val MAX_TEXTO = 200
 
@@ -93,7 +103,8 @@ data class Assinaturas(
                 reelsViewerIds = o.optJSONArray("reelsViewerIds").paraLista(),
                 botoes = botoes,
                 badgeIds = o.optJSONArray("badgeIds").paraLista(),
-                reelsChatIds = o.optJSONArray("reelsChatIds").paraLista()
+                reelsChatIds = o.optJSONArray("reelsChatIds").paraLista(),
+                reelsReservaIds = o.optJSONArray("reelsReservaIds").paraLista()
             )
         }
 

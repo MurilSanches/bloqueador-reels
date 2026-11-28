@@ -68,6 +68,35 @@ class AssinaturasTest {
     }
 
     @Test
+    fun idsDeReservaVemDoArquivoEPrecisamSerDoInstagram() {
+        assertTrue(assin.reelsReservaIds.size >= Decisoes.MIN_RESERVA)
+        val adulterado = validoTexto.replace(assin.reelsReservaIds.first(), "com.banco.app:id/saldo")
+        assertNull(Assinaturas.deJsonOuNull(adulterado))
+    }
+
+    @Test
+    fun listaDeReservaGrandeDemaisERecusada() {
+        val ids = (1..5).joinToString(",") { "\"com.instagram.android:id/r$it\"" }
+        val adulterado = validoTexto.replace(Regex("\"reelsReservaIds\": \\[[^]]*]"), "\"reelsReservaIds\": [$ids]")
+        assertNull(Assinaturas.deJsonOuNull(adulterado))
+    }
+
+    @Test
+    fun idsDeReservaRepetidosSaoRecusados() {
+        val id = "\"${assin.reelsReservaIds.first()}\""
+        val adulterado = validoTexto.replace(Regex("\"reelsReservaIds\": \\[[^]]*]"), "\"reelsReservaIds\": [$id,$id]")
+        assertNull(Assinaturas.deJsonOuNull(adulterado))
+    }
+
+    @Test
+    fun arquivoSemListaDeReservaAindaCarrega() {
+        val sem = validoTexto.replace(Regex("\"reelsReservaIds\": \\[[^]]*],?"), "")
+        val carregado = Assinaturas.deJsonOuNull(sem)
+        assertTrue(carregado != null)
+        assertTrue(carregado!!.reelsReservaIds.isEmpty())
+    }
+
+    @Test
     fun jsonMalformadoOuVazioViraNullSemExcecao() {
         listOf("", "   ", "{", "[]", "null", "not json", "{\"botoes\": 5}", "{\"botoes\": [1,2]}")
             .forEach { assertNull(it, Assinaturas.deJsonOuNull(it)) }

@@ -22,6 +22,16 @@ object Decisoes {
         else -> AcaoReels.VOLTAR
     }
 
+    /** Quantos IDs de reserva precisam estar visíveis juntos para valer como tela de vídeo curto. */
+    const val MIN_RESERVA = 2
+
+    /**
+     * A tela é de vídeo curto (Reels)? Vale o ID principal; se ele sumir numa versão nova do
+     * Instagram, valem os IDs de reserva, mas só juntos (um sozinho poderia aparecer em outra tela).
+     */
+    fun telaVideoCurto(principalVisivel: Boolean, reservaVisiveis: Int): Boolean =
+        principalVisivel || reservaVisiveis >= MIN_RESERVA
+
     /** Depois de entrar no Instagram vindo de fora, por quanto tempo a entrada ainda conta como "por link". */
     const val ENTRADA_EXTERNA_MAX_MS = 20_000L
 
